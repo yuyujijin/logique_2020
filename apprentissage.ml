@@ -29,17 +29,42 @@ let explode s =
     if i < 0 then l else exp (i - 1) (s.[i] :: l) in
   exp (String.length s - 1) []
 
+(* ajoute x dans l, supposée triée*)
+let rec insert l x =
+  match l with
+  | [] -> [x]
+  | h :: t ->
+     if x < h
+     then x :: l
+     else if x = h
+     then t
+     else h :: (insert t x)
+  
+(*ajoute les caractères de l2 dans l1 s'ils n'y sont pas déjà *)
+let rec add l1 l2 =
+  match l2 with
+  | [] -> l1
+  | h :: t ->
+     if List.mem l1 h
+     then add l1 t
+     else add (insert l1 h) t
+    
 (* alphabet_from_list : string list -> char list  
    - prend en entrée une liste l de chaînes de caractères 
    - renvoie la liste triée et sans duplication de caractères
      apparaissant dans l
  *)
 let alphabet_from_list l =
-  (* à compléter *)
-  []
+  let rec alphabet s a =
+    match s with
+    | [] -> a
+    | h :: t ->
+       alphabet t (add a (explode h))
+  in
+  alphabet l []
   
 (* test *)
-(* let a = alphabet_from_list (li @ le) *)
+let a = alphabet_from_list (li @ le)
 
 (* ======================================================================= *)
 (* EXERCICE 2 : définition de l'alphabet A et de l'arbre préfixe T en
