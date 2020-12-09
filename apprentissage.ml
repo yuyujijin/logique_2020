@@ -64,7 +64,7 @@ let alphabet_from_list l =
   alphabet l []
   
 (* test *)
-let a = alphabet_from_list (li @ le)
+(*let a = alphabet_from_list (li @ le)*)
 
 (* ======================================================================= *)
 (* EXERCICE 2 : définition de l'alphabet A et de l'arbre préfixe T en
@@ -134,12 +134,18 @@ let define_sorts_and_functions  =
   "(define-sort Q () Int)
 (declare-const n Q)
 (assert (> n 0))
+
 (declare-fun delta (Q A) Q)
 (assert (forall ((q Q) (a A))
-  (and (>= (delta q a) 0) (< (delta q a) n))))
+(and (>= (delta q a) 0) (< (delta q a) n))))
+
+(declare-fun final (Q) Bool)
+
 (declare-fun f (T) Q)
 (assert (forall ((x T))
-  (and (>= (f x) 0) (< (f x) n))))"
+(and (>= (f x) 0) (< (f x) n))))
+
+(assert (= 0 (f e)))"
   
 (* ======================================================================= *)
 (* EXERCICE 4 : contraintes sur les transitions
@@ -245,10 +251,12 @@ let assert_acceptance li le  =
    Pour vérifier votre algorithme, vous pouvez essayer le code SMT-LIB 
    que vous obtenez dans le solveur Z3: https://rise4fun.com/z3 *)
 let smt_code li le =
-  declare_types (li @ le) a
+  declare_types (li @ le) (alphabet_from_list (li @ le))
+  ^ "\n\n"
   ^ define_sorts_and_functions
-  ^ "\n"
+  ^ "\n\n"
   ^ assert_transition_constraints (li @ le)
+  ^ "\n\n"
   ^ assert_acceptance li le
   ^ "\n(check-sat-using (then qe smt))
 (get-value ((delta 0 a) (delta 0 b) (delta 1 a) (delta 1 b) (final 0) (final 1)))
