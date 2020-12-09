@@ -45,7 +45,7 @@ let rec add l1 l2 =
   match l2 with
   | [] -> l1
   | h :: t ->
-     if List.mem l1 h
+     if List.mem h l1
      then add l1 t
      else add (insert l1 h) t
     
@@ -77,39 +77,47 @@ let a = alphabet_from_list (li @ le)
    Nous allons ajouter à chaque préfixe le caractère 'e'.
    Par exemple, prefixes "aba" = ["e"; "ea"; "eab"; "eaba"] *)
 let rec prefixes s =
-  (* à compléter *)
-  []
+  let f i =
+    "e" ^ String.sub s 0 i
+  in
+  List.init (String.length s + 1) f
   
 (* prefixes_of_list : string list -> string list
    renvoie la liste triée et sans doublons des préfixes des chaînes 
    de caractères d'une liste donnée *)
 let prefixes_of_list l =
-  (* à compléter *)
-  []
-  
+  add [] l
+
 (* declare_types_alphabet : char list -> string
    prend une liste de caractères [c_1; ...; c_n] et renvoie une chaîne 
    de la forme "(A c_1... c_n)" *)
 let declare_types_alphabet cl =
-  (* à compléter *)
-  ""
+  let rec aux l =
+    match l with
+    | [] -> ")"
+    | h :: t -> " " ^ Char.escaped h ^ (aux t)
+  in
+  "(A" ^ (aux cl)
 
+let rec declare_types_t l =
+  match l with
+  | [] -> ")"
+  | h :: t -> " " ^ h ^ (declare_types_a_t t)
+            
 (* declare_types_trie : string list -> string 
    prend une liste l de chaînes de caractères et 
    renvoie une chaîne de la forme "(T es_1 ... es_n)" où 
    s_1... s_n est une énumération de tous les 
    prefixes des chaînes apparaissant dans l *)
 let declare_types_trie l =
-  (* à compléter *)
-  ""
+  "(T" ^ (declare_types_t (prefixes_of_list (List.flatten (List.map prefixes l))))
 
 (* declare_types : string list -> char list -> string *)  
 let declare_types l cl =
-  (* à compléter *)
-  ""
+  "(declare-datatypes () (" ^ (declare_types_alphabet cl) ^ " " ^ (declare_types_trie l) ^ "))";;
   
 (* test *)
-(* Printf.printf "%s" (declare_types (li @ le) a) *)
+Printf.printf "%s" (declare_types (li @ le) a) 
   
 
 (* ======================================================================= *)
