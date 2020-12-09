@@ -153,7 +153,7 @@ let define_sorts_and_functions  =
    Par exemple, pour s = "abc" et  c = 'd' on a 
    eq_trans_constr outputs "(= (f abcd)  (delta (f abc)  d))" *)
 let eq_trans_constr s a =
-   "(= (f " ^ s ^ Char.escaped a ^ ") (delta (f " ^ s ^ ") " ^ Char.escaped a ^"))"
+   "           (= (f " ^ s ^ Char.escaped a ^ ") (delta (f " ^ s ^ ") " ^ Char.escaped a ^"))"
 
 (* list_transition_constraints : string list -> string list
    prend une liste de chaînes de caractères et génère une liste 
@@ -189,7 +189,9 @@ let rec lisse l =
     | h :: t -> h ^ "\n" ^ (lisse t)
     
 let assert_transition_constraints l =
-  "(assert (and " ^ lisse (list_transition_constraints (prefixes_of_list (List.map prefixes li@le))) ^ "))"
+  "(assert (and\n"
+  ^ lisse (list_transition_constraints (prefixes_of_list (List.flatten (List.map prefixes (li @ le)))))
+  ^ "))";;
 
 (* test *)
 Printf.printf "%s" (assert_transition_constraints (li @ le)) 
@@ -204,16 +206,14 @@ Printf.printf "%s" (assert_transition_constraints (li @ le))
    - prend une chaîne de caractères s et renvoie une chaîne de caractères 
    qui modélise l'appartenance de s à l'ensemble final des états acceptants *)
 let eq_accept s =
-  (* à compléter *)
-  ""
+  "           (final (f " ^ s ^ "))"
 
 (* eq_non_accept : string -> string 
    - prend une chaîne de caractères s et renvoie une chaîne de caractères 
    qui modélise la non-appartenance de s à l'ensemble final des états acceptants 
  *)
 let eq_non_accept s =
-  (* à compléter *)
-  ""
+  "           (not(final (f " ^ s ^ ")))"
 
 (* assert_acceptance : string list -> string list > string
    prend deux listes de chaînes de caractères, li et le, et renvoie une
@@ -221,11 +221,16 @@ let eq_non_accept s =
    décrites par la formule (52). 
    Les mots dans li sont acceptés et les mots dans le ne le sont pas. *)
 let assert_acceptance li le  =
-  (* à compléter *)
-  ""
+  let adde a =
+    "e" ^ a
+  in
+  "(assert (and \n"
+  ^ lisse (List.map eq_accept (List.map adde li))
+  ^ lisse (List.map eq_non_accept (List.map adde le))
+  ^ "))";;
   
 (* test *)
-(* Printf.printf "%s" (assert_acceptance li le) *)
+Printf.printf "%s" (assert_acceptance li le)
   
 (* ======================================================================= *)
 (* EXERCICE 6 :
@@ -240,11 +245,17 @@ let assert_acceptance li le  =
    Pour vérifier votre algorithme, vous pouvez essayer le code SMT-LIB 
    que vous obtenez dans le solveur Z3: https://rise4fun.com/z3 *)
 let smt_code li le =
-  (* à compléter *)
-  ";; à compléter"
+  define_sorts_and_functions
+  ^ "\n"
+  ^ assert_transition_constraints (li @ le)
+  ^ assert_acceptance li le
+  ^ "\n(check-sat-using (then qe smt))
+(get-value ((delta 0 a) (delta 0 b) (delta 1 a) (delta 1 b) (final 0) (final 1)))
+(exit)"
+  ;;
   
 (* test *)
-(* Printf.printf "%s" (smt_code li le) *)
+Printf.printf "%s" (smt_code li le)
 
 
 (* ======================================================================= *)
