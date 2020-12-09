@@ -102,7 +102,7 @@ let declare_types_alphabet cl =
 let rec declare_types_t l =
   match l with
   | [] -> ")"
-  | h :: t -> " " ^ h ^ (declare_types_a_t t)
+  | h :: t -> " " ^ h ^ (declare_types_t t)
             
 (* declare_types_trie : string list -> string 
    prend une liste l de chaînes de caractères et 
@@ -131,8 +131,15 @@ Printf.printf "%s" (declare_types (li @ le) a)
    Ces définitions ne dépendent pas des listes de mots acceptés ou rejetés. *)
 
 let define_sorts_and_functions  =
-  (* à compléter *)
-  ""
+  "(define-sort Q () Int)
+(declare-const n Q)
+(assert (> n 0))
+(declare-fun delta (Q A) Q)
+(assert (forall ((q Q) (a A))
+  (and (>= (delta q a) 0) (< (delta q a) n))))
+(declare-fun f (T) Q)
+(assert (forall ((x T))
+  (and (>= (f x) 0) (< (f x) n))))"
   
 (* ======================================================================= *)
 (* EXERCICE 4 : contraintes sur les transitions
@@ -146,8 +153,7 @@ let define_sorts_and_functions  =
    Par exemple, pour s = "abc" et  c = 'd' on a 
    eq_trans_constr outputs "(= (f abcd)  (delta (f abc)  d))" *)
 let eq_trans_constr s a =
-  (* à compléter *)
-  ""
+   "(= (f " ^ s ^ Char.escaped a ^ ") (delta (f " ^ s ^ ") " ^ Char.escaped a ^"))"
 
 (* list_transition_constraints : string list -> string list
    prend une liste de chaînes de caractères et génère une liste 
@@ -156,9 +162,15 @@ let eq_trans_constr s a =
      une chaine correspondant à l'équation f(sa) = delta (fs) a
    - pour la chaîne vide on obtient la chaîne vide *)
 let rec list_transition_constraints l =
-  (* à compléter *)
-  []
-  
+  match l with
+  | [] -> []
+  | h :: t ->
+     if h = "e"
+     then (list_transition_constraints t)
+     else
+       eq_trans_constr (String.sub h 0 (String.length h - 1)) (String.get h (String.length h - 1))
+       :: (list_transition_constraints t)
+    
 (* assert_transition_constraints : string list -> string
    prend en entrée une liste de mots et renvoie une chaîne qui modélise 
    les contraintes sur les transitions de l'automate décrit par la 
@@ -170,12 +182,17 @@ let rec list_transition_constraints l =
                (= (f eab)  (delta (f ea)  b))
                (= (f eb)  (delta (f e)  b))))"
  *)
+
+let rec lisse l =
+    match l with
+    | [] -> ""
+    | h :: t -> h ^ "\n" ^ (lisse t)
+    
 let assert_transition_constraints l =
-  (* à compléter *)
-  ""
+  "(assert (and " ^ lisse (list_transition_constraints (prefixes_of_list (List.map prefixes li@le))) ^ "))"
 
 (* test *)
-(* Printf.printf "%s" (assert_transition_constraints (li @ le)) *)
+Printf.printf "%s" (assert_transition_constraints (li @ le)) 
 
 (* ======================================================================= *)
 (* EXERCICE 5 : contraintes sur les états acceptants La fonction
