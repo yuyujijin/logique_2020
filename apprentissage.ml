@@ -117,7 +117,7 @@ let declare_types l cl =
   "(declare-datatypes () (" ^ (declare_types_alphabet cl) ^ " " ^ (declare_types_trie l) ^ "))";;
   
 (* test *)
-Printf.printf "%s" (declare_types (li @ le) a) 
+(*Printf.printf "%s" (declare_types (li @ le) a) *)
   
 
 (* ======================================================================= *)
@@ -194,7 +194,7 @@ let assert_transition_constraints l =
   ^ "))";;
 
 (* test *)
-Printf.printf "%s" (assert_transition_constraints (li @ le)) 
+(*Printf.printf "%s" (assert_transition_constraints (li @ le))*)
 
 (* ======================================================================= *)
 (* EXERCICE 5 : contraintes sur les états acceptants La fonction
@@ -230,7 +230,7 @@ let assert_acceptance li le  =
   ^ "))";;
   
 (* test *)
-Printf.printf "%s" (assert_acceptance li le)
+(*Printf.printf "%s" (assert_acceptance li le)*)
   
 (* ======================================================================= *)
 (* EXERCICE 6 :
@@ -245,17 +245,18 @@ Printf.printf "%s" (assert_acceptance li le)
    Pour vérifier votre algorithme, vous pouvez essayer le code SMT-LIB 
    que vous obtenez dans le solveur Z3: https://rise4fun.com/z3 *)
 let smt_code li le =
-  define_sorts_and_functions
+  declare_types (li @ le) a
+  ^ define_sorts_and_functions
   ^ "\n"
   ^ assert_transition_constraints (li @ le)
   ^ assert_acceptance li le
   ^ "\n(check-sat-using (then qe smt))
 (get-value ((delta 0 a) (delta 0 b) (delta 1 a) (delta 1 b) (final 0) (final 1)))
-(exit)"
+(exit)\n"
   ;;
   
 (* test *)
-Printf.printf "%s" (smt_code li le)
+  (*Printf.printf "%s" (smt_code li le)*)
 
 
 (* ======================================================================= *)
