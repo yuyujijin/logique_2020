@@ -40,7 +40,9 @@ let rec insert l x =
      then t
      else h :: (insert t x)
 
-(*ajoute les caractères de l2 dans l1 s'ils n'y sont pas déjà *)
+(*ajoute les caractères de l2 dans l1 s'ils n'y sont pas déjà,
+l1 est supposée triée, et les éléments sont ajoutés selon l'ordre 
+de grandeur *)
 let rec add l1 l2 =
   match l2 with
   | [] -> l1
@@ -99,6 +101,8 @@ let declare_types_alphabet cl =
   in
   "(A" ^ (aux cl)
 
+(* prend une liste [s1;s2;s3;...;sn] et renvoie la chaîne
+"s1 s2 s3 ... sn"*)
 let rec declare_types_t l =
   match l with
   | [] -> ")"
@@ -177,6 +181,13 @@ let rec list_transition_constraints l =
        eq_trans_constr (String.sub h 0 (String.length h - 1)) (String.get h (String.length h - 1))
        :: (list_transition_constraints t)
 
+(* lisse la liste l [s1;s2;s3;...;sn] en renvoyant "s1\ns2\ns3\n...sn"
+ *)
+let rec lisse l =
+    match l with
+    | [] -> ""
+    | h :: t -> h ^ "\n" ^ (lisse t)
+    
 (* assert_transition_constraints : string list -> string
    prend en entrée une liste de mots et renvoie une chaîne qui modélise
    les contraintes sur les transitions de l'automate décrit par la
@@ -188,11 +199,6 @@ let rec list_transition_constraints l =
                (= (f eab)  (delta (f ea)  b))
                (= (f eb)  (delta (f e)  b))))"
  *)
-
-let rec lisse l =
-    match l with
-    | [] -> ""
-    | h :: t -> h ^ "\n" ^ (lisse t)
 
 let assert_transition_constraints l =
   "(assert (and\n"
@@ -251,12 +257,19 @@ let assert_acceptance li le  =
    Pour vérifier votre algorithme, vous pouvez essayer le code SMT-LIB
    que vous obtenez dans le solveur Z3: https://rise4fun.com/z3 *)
 let smt_code li le =
+
+  (* definition de l'alphabet A et de l'arbre prefixe T*)
   declare_types (li @ le) (alphabet_from_list (li @ le))
   ^ "\n\n"
+  (* définition des etats, de la fonction de transition de l'automate,
+   des etats acceptants, de la fonction f et de la contrainte sur
+l'etat initial *)
   ^ define_sorts_and_functions
   ^ "\n\n"
+  (* contraintes sur les transitions *)
   ^ assert_transition_constraints (li @ le)
   ^ "\n\n"
+  (* contraintes sur les états acceptants *)
   ^ assert_acceptance li le
   ^ "\n(check-sat-using (then qe smt))\n
 (get-model)\n
